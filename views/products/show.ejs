@@ -11,9 +11,13 @@
     <ul>
       <li>Brand: <%=product.brand %></li>
       <li>Color: <%= product.color %></li>
-      <li>Size: <%= product.size %></li>
+      <li>Category: <%= product.category %></li>
       <li>Price: <%= product.price %></li>
     </ul>
     <a href="/products">Back to All Products</a>
+    <a href="/products/<%= product._id%>/edit">Edit Product</a>
+    <form action="/products/<%= product._id%>?_method=DELETE" method="post">
+      <button type="submit">Delete</button>
+    </form>
   </body>
 </html>
