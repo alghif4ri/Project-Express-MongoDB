@@ -71,10 +71,10 @@ const seedProducts = [
   },
 ];
 
-Product.insertMany(seedProducts)
-  .then((result) => {
-    console.log(result);
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// Product.insertMany(seedProducts)
+//   .then((result) => {
+//     console.log(result);
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });

@@ -22,6 +22,17 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => {
   res.send("Hallo!");
 });
+app.get("/products", async (req, res) => {
+  const products = await Product.find({});
+  res.render('products/index', {products});
+});
+
+app.get('/products/:id', async(req,res)=>{
+    // const {id} = req.params
+    const product = await Product.findById(req.params.id)
+    res.render('products/show', {product})
+
+})
 
 app.listen(port, () => {
   console.log(`ShopApp is running on http://localhost:${port}`);
