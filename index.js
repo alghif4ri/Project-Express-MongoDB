@@ -8,6 +8,7 @@ const port = 3001;
 
 // MODELS
 const Product = require("./models/product");
+const Garment = require("./models/garment");
 
 mongoose
   .connect("mongodb://127.0.0.1/shop_db")
@@ -28,6 +29,59 @@ function wrapAsync(fn) {
     fn(req, res, next).catch((err) => next(err));
   };
 }
+
+app.get("/garments", wrapAsync(async (req, res) => {
+    const garments = await Garment.find({});
+    res.render("garments/index", { garments });
+  }));
+
+app.get("/garments/create", (req, res) => {
+  res.render("garments/create");
+});
+
+app.post(
+  "/garments",
+  wrapAsync(async (req, res) => {
+    const garment = new Garment(req.body);
+    await garment.save();
+    res.redirect("/garments");
+  })
+);
+
+app.get(
+  "/garments/:id",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const garment = await Garment.findById(id).populate("products");
+    res.render("garments/show", { garment });
+  })
+);
+
+// /garments/:garment_id/product/create
+app.get("/garments/:garment_id/products/create", async (req, res) => {
+  const { garment_id } = req.params;
+  res.render("products/create", { garment_id });
+});
+// /garments/:garment_id/product/
+app.post("/garments/:garment_id/products",wrapAsync(async (req, res) => {
+    const { garment_id } = req.params;
+    const garment = await Garment.findById(garment_id);
+    const product = new Product(req.body);
+    garment.products.push(product);
+    product.garment = garment;
+    await garment.save();
+    await product.save();
+    console.log(garment);
+    res.redirect(`/garments/${garment_id}`);
+  }));
+// /garments/:garment_id/product/:product_id/edit
+// /garments/:garment_id/product/:product_id/
+
+app.delete('/garments/:garment_id/', wrapAsync(async(req,res)=>{
+  const {garment_id} = req.params
+  await Garment.findOneAndDelete({ _id: garment_id})
+  res.redirect('/garments')
+}))
 app.get("/", (req, res) => {
   res.send("Hallo!");
 });
@@ -47,17 +101,21 @@ app.get("/products/create", (req, res) => {
   res.render("products/create");
 });
 
-app.post("/products", wrapAsync(async (req, res) => {
-  const product = new Product(req.body);
-  await product.save();
-  res.redirect(`/products/${product._id}`);
-}));
+app.post(
+  "/products",
+  wrapAsync(async (req, res) => {
+    const product = new Product(req.body);
+    await product.save();
+    res.redirect(`/products/${product._id}`);
+  })
+);
 
 app.get(
   "/products/:id",
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate("garment");
+    // res.send(product);
     res.render("products/show", { product });
   })
 );

@@ -6,6 +6,7 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   color: { type: String, required: true },
   category: { type: String, enum: ['Baju', 'Celana', 'Aksesoris','Jaket'], required: true },
+  garment:{ type: mongoose.Schema.Types.ObjectId, ref:'Garment'}
 });
 
 const Product = mongoose.model("Product", productSchema);

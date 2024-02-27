@@ -19,6 +19,12 @@
           </a>
       </li>
     </ul>
+    <h2>Garment</h2>
+    <ul>
+      <li>
+        <a href="/garments/<%= product.garment._id %>"><%= product.garment.name %></a>
+      </li>
+    </ul>
     <a href="/products">Back to All Products</a>
     <a href="/products/<%= product._id%>/edit">Edit Product</a>
     <form action="/products/<%= product._id%>?_method=DELETE" method="post">
