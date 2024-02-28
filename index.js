@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const app = express();
 const ErrorHandler = require("./ErrorHandler");
+const session = require("express-session");
+const flash = require("connect-flash");
 const port = 3001;
 
 // MODELS
@@ -23,17 +25,31 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(flash()); // use connect-flash for flash messages
+app.use((req,res,next)=> {
+  res.locals.flash_messages = req.flash('flash_messages')
+  next()
+})
 function wrapAsync(fn) {
   return function (req, res, next) {
     fn(req, res, next).catch((err) => next(err));
   };
 }
 
-app.get("/garments", wrapAsync(async (req, res) => {
+app.get(
+  "/garments",
+  wrapAsync(async (req, res) => {
     const garments = await Garment.find({});
     res.render("garments/index", { garments });
-  }));
+  })
+);
 
 app.get("/garments/create", (req, res) => {
   res.render("garments/create");
@@ -44,6 +60,7 @@ app.post(
   wrapAsync(async (req, res) => {
     const garment = new Garment(req.body);
     await garment.save();
+    req.flash('flash_messages', "Garment created!");
     res.redirect("/garments");
   })
 );
@@ -63,7 +80,9 @@ app.get("/garments/:garment_id/products/create", async (req, res) => {
   res.render("products/create", { garment_id });
 });
 // /garments/:garment_id/product/
-app.post("/garments/:garment_id/products",wrapAsync(async (req, res) => {
+app.post(
+  "/garments/:garment_id/products",
+  wrapAsync(async (req, res) => {
     const { garment_id } = req.params;
     const garment = await Garment.findById(garment_id);
     const product = new Product(req.body);
@@ -73,15 +92,19 @@ app.post("/garments/:garment_id/products",wrapAsync(async (req, res) => {
     await product.save();
     console.log(garment);
     res.redirect(`/garments/${garment_id}`);
-  }));
+  })
+);
 // /garments/:garment_id/product/:product_id/edit
 // /garments/:garment_id/product/:product_id/
 
-app.delete('/garments/:garment_id/', wrapAsync(async(req,res)=>{
-  const {garment_id} = req.params
-  await Garment.findOneAndDelete({ _id: garment_id})
-  res.redirect('/garments')
-}))
+app.delete(
+  "/garments/:garment_id/",
+  wrapAsync(async (req, res) => {
+    const { garment_id } = req.params;
+    await Garment.findOneAndDelete({ _id: garment_id });
+    res.redirect("/garments");
+  })
+);
 app.get("/", (req, res) => {
   res.send("Hallo!");
 });
